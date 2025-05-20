@@ -79,3 +79,41 @@ vim.api.nvim_create_autocmd(
         end
     }
 )
+
+
+function scratch_new(opts)
+    filetype = nil
+    if opts.fargs[1] then
+        filetype = opts.fargs[1]
+    end
+
+    local bufnr = vim.api.nvim_create_buf(false, true)
+    local width = vim.opt.columns:get()
+    local height = vim.opt.lines:get()
+    local padding_y = 3
+    local padding_x = 10
+
+    local floating_width = (width - padding_x * 2)
+    local floating_height = (height - padding_y * 2)
+
+    local start_x = padding_x
+    local start_y = padding_y
+
+    local winnr = vim.api.nvim_open_win(bufnr, true, {
+        relative='editor',
+        row=start_y, col=start_x,
+        width=floating_width, height=floating_height,
+        border='double'
+    })
+
+    vim.api.nvim_set_option_value('bufhidden', 'wipe', {
+        buf=bufnr
+    })
+    if filetype then
+        vim.api.nvim_set_option_value('filetype', filetype, {
+            buf=bufnr
+        })
+    end
+end
+
+vim.api.nvim_create_user_command("Scratch", scratch_new, {nargs = '*'})
