@@ -80,13 +80,7 @@ vim.api.nvim_create_autocmd(
     }
 )
 
-
-function scratch_new(opts)
-    filetype = nil
-    if opts.fargs[1] then
-        filetype = opts.fargs[1]
-    end
-
+function create_floating_window()
     local bufnr = vim.api.nvim_create_buf(false, true)
     local width = vim.opt.columns:get()
     local height = vim.opt.lines:get()
@@ -109,11 +103,62 @@ function scratch_new(opts)
     vim.api.nvim_set_option_value('bufhidden', 'wipe', {
         buf=bufnr
     })
-    if filetype then
-        vim.api.nvim_set_option_value('filetype', filetype, {
+
+
+    return bufnr, winnr
+
+end
+
+function string_nil_or_empty(s)
+    return s == nil or s == ""
+end
+
+function determine_project_dir()
+    local dir = nil
+    if not string_nil_or_empty(vim.fn.expand('%')) then
+        dir = vim.fn.expand('%:h')
+    else
+        dir = vim.fn.getcwd(0)
+    end
+    -- Search upward for git
+    local found = vim.fn.finddir('.git', ';' )  
+
+    if not string_nil_or_empty(found) then
+        found = vim.fs.dirname(found)
+    else
+        found = dir
+    end
+
+    return found
+end
+
+function scratch_new(opts)
+    local bufnr, winnr = create_floating_window()
+    if opts.fargs[1] then
+        vim.api.nvim_set_option_value('filetype', opts.fargs[1], {
             buf=bufnr
         })
     end
 end
 
+function term_new(opts)
+    local bufnr, winnr = create_floating_window()
+    local cwd = determine_project_dir()
+    local cmd = string.format('pushd %q & fzf & popd', cwd)
+
+    vim.fn.termopen(cmd, {
+        on_exit = function(job_id, exit_code, event)
+            vim.defer_fn(function()
+                if vim.api.nvim_win_is_valid(winnr) then
+                    vim.api.nvim_win_close(winnr, true)
+                end
+            end, 0)
+        end,
+    }) 
+    vim.api.nvim_set_current_win(winnr)
+    vim.cmd('startinsert')
+end
+
 vim.api.nvim_create_user_command("Scratch", scratch_new, {nargs = '*'})
+vim.api.nvim_create_user_command("BrowseFile", term_new, {nargs = '*'})
+
