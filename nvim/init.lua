@@ -13,8 +13,6 @@ vim.opt.sidescrolloff=10
 
 vim.opt.textwidth = 80
 vim.opt.linebreak = true
-vim.opt.list = true
-vim.opt.listchars = { eol = '$'}
 
 vim.cmd [[
   colorscheme retrobox
@@ -144,19 +142,41 @@ end
 function term_new(opts)
     local bufnr, winnr = create_floating_window()
     local cwd = determine_project_dir()
-    local cmd = string.format('pushd %q & fzf & popd', cwd)
 
-    vim.fn.termopen(cmd, {
-        on_exit = function(job_id, exit_code, event)
+    vim.api.nvim_set_option_value('bufhidden', 'wipe', {
+        buf=bufnr
+    })
+
+    vim.fn.termopen('fzf', {
+        cwd=cwd,
+        on_exit = function (a, b, c)
+
+            local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+            local return_line
+
+            for k, v in ipairs(lines) do
+                if v and value ~= "" then
+                    return_line = v
+                    break
+                end
+            end
+
             vim.defer_fn(function()
-                if vim.api.nvim_win_is_valid(winnr) then
-                    vim.api.nvim_win_close(winnr, true)
+                if return_line and return_line ~= "" then
+                    if vim.api.nvim_win_is_valid(winnr) then
+                        vim.api.nvim_win_close(winnr, true)
+                    end
+                    if return_line then
+                        vim.cmd(":edit " .. vim.fs.joinpath(cwd, return_line))
+                    end
                 end
             end, 0)
         end,
-    }) 
-    vim.api.nvim_set_current_win(winnr)
-    vim.cmd('startinsert')
+    })
+
+    vim.api.nvim_set_current_win(winnr);
+    vim.cmd([[:startinsert]])
+
 end
 
 vim.api.nvim_create_user_command("Scratch", scratch_new, {nargs = '*'})
