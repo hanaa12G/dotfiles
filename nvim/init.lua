@@ -14,6 +14,17 @@ vim.opt.sidescrolloff=10
 vim.opt.textwidth = 80
 vim.opt.linebreak = true
 
+vim.api.nvim_create_autocmd(
+    {'VimEnter'},
+    {
+        callback = function ()
+            if vim.fn.has('win32') and vim.fn.environ()['MSYSTEM'] then
+                vim.opt.shellcmdflag = '-s -c'
+            end
+        end
+    }
+)
+
 vim.cmd [[
   colorscheme retrobox
 ]]
