@@ -1,6 +1,5 @@
 vim.opt.softtabstop = 4
 vim.opt.shiftwidth = 4
-
 vim.opt.smarttab = true
 vim.opt.expandtab = true
 
@@ -30,7 +29,7 @@ vim.cmd [[
 ]]
 
 
-vim.g.mapleader = '<Space>'
+vim.g.mapleader = vim.keycode'<Space>'
 
 -- Switch between number mode -- 
 g_opt_number_mode = 2
@@ -193,3 +192,25 @@ end
 vim.api.nvim_create_user_command("Scratch", scratch_new, {nargs = '*'})
 vim.api.nvim_create_user_command("BrowseFile", term_new, {nargs = '*'})
 
+
+vim.call('plug#begin')
+
+local Plug = vim.fn['plug#']
+
+Plug('vimwiki/vimwiki', { ['tag']='v2024.01.24'})
+
+
+vim.call('plug#end')
+
+vim.g.vimwiki_list = {
+    {
+        path='~/Workspace/note',
+        syntax='markdown',
+        index='Index',
+        ext='.md',
+        auto_export=0,
+        auto_toc=1,
+    }
+}
+
+vim.keymap.set('n', '<Leader><Leader>wiki', '<Plug>VimwikiUISelect', {silent=true})

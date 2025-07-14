@@ -1,0 +1,38 @@
+vim9script
+
+set nocompatible
+filetype plugin on
+syntax on
+
+color murphy
+
+set hlsearch incsearch
+
+set tabstop=4
+set shiftwidth=4
+set expandtab
+set autoindent
+
+set colorcolumn=80
+set cursorline
+
+set nowrap
+
+set hidden
+
+set number
+set relativenumber
+
+g:mapleader = ' '
+
+g:vimwiki_list = [
+    {
+        'path': '~/Workspace/note/',
+        'ext': '.md',
+        'syntax': 'markdown',
+    }
+]
+
+
+hi MatchParen ctermbg=Black ctermfg=Green term=None
+

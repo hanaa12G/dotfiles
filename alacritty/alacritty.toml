@@ -1,0 +1,11 @@
+[keyboard]
+
+bindings = [
+    { key = "=", mods = "Control", action = "None" },
+    { key = "-", mods = "Control", action = "None" },
+    { key = "0", mods = "Control", action = "None" },
+
+    { key = "=", mods = "Control|Alt", action = "IncreaseFontSize" },
+    { key = "-", mods = "Control|Alt", action = "DecreaseFontSize" },
+    { key = "0", mods = "Control|Alt", action = "ResetFontSize" },
+]
