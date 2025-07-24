@@ -23,8 +23,9 @@ set hidden
 set number
 set relativenumber
 
-g:mapleader = ' '
+set background=dark
 
+g:mapleader = ' '
 g:vimwiki_list = [
     {
         'path': '~/Workspace/note/',
@@ -42,28 +43,7 @@ def InstallVimwiki(destination: string)
     const tag = 'v2024.01.24'
     const to  = destination .. '/' .. 'vimwiki'
 
-    var cmd: string
-    var output: string
-
-    if exists(":VimwikiIndex") == 0
-        cmd = ['git', 'clone', url, to]->join(' ')
-        output = system(cmd)
-        if v:shell_error != 0
-            echoerr output
-            return
-        endif
-        cmd = ['git', '-C', to, 'checkout', 'tags/' .. tag]->join(' ')
-        output = system(cmd)
-        if v:shell_error != 0
-            echoerr output
-            return
-        endif
-
-        var doc_path = to .. '/' .. 'doc'
-        execute 'helptags ' .. doc_path
-
-        echo "Install vimwiki successful! Path: " .. to
-    endif
+    InstallPluginURL(url, to, tag)
 enddef
 
 def InstallCommentary(destination: string)
@@ -71,27 +51,38 @@ def InstallCommentary(destination: string)
     const tag = 'v1.3'
     const to  = destination .. '/' .. 'commentary'
 
-    var cmd: string
-    var output: string
+    InstallPluginURL(url, to, tag)
 
-    if exists("g:loaded_commentary") == 0
-        cmd = ['git', 'clone', url, to]->join(' ')
-        output = system(cmd)
-        if v:shell_error != 0
-            echoerr output
-            return
-        endif
+enddef
+
+def InstallPluginURL(url: string, to: string, tag: string = null_string)
+    var cmd = ['git', 'clone', url, to]->join(' ')
+    var output = system(cmd)
+    if v:shell_error != 0
+        echoerr output
+        return
+    endif
+    if tag != null_string
         cmd = ['git', '-C', to, 'checkout', 'tags/' .. tag]->join(' ')
         output = system(cmd)
         if v:shell_error != 0
             echoerr output
             return
         endif
+    endif
+    var doc_path = to .. '/' .. 'doc'
+    execute 'helptags ' .. doc_path
 
-        var doc_path = to .. '/' .. 'doc'
-        execute 'helptags ' .. doc_path
+    echo "Install commentary successful! Path: " .. to
+enddef
 
-        echo "Install commentary successful! Path: " .. to
+def InstallIndentGuides(destination: string)
+    const url = 'https://github.com/preservim/vim-indent-guides.git'
+    const tag = '1.6'
+    const to  = destination .. '/' .. 'vim-indent-guides'
+
+    if exists('g:loaded_indent_guides') == 0
+        InstallPluginURL(url, to, tag)
     endif
 enddef
 
@@ -110,6 +101,8 @@ def! g:InstallEditorPlugin(plugin_name: string)
         InstallVimwiki(destination)
     elseif plugin_name == 'commentary' 
         InstallCommentary(destination)
+    elseif plugin_name == 'vim-indent-guides'
+        InstallIndentGuides(destination)
     else
         echoerr "Unsupported plugin name " .. plugin_name
     endif
