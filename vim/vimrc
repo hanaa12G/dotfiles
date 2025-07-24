@@ -36,3 +36,48 @@ g:vimwiki_list = [
 
 hi MatchParen ctermbg=Black ctermfg=Green term=None
 
+
+def InstallVimWiki(destination: string)
+    const url = 'https://github.com/vimwiki/vimwiki.git'
+    const tag = 'v2024.01.24'
+    const to  = destination .. '/' .. 'vimwiki'
+
+    var cmd: string
+    var output: string
+
+    if exists(":VimWikiIndex") == 0
+        cmd = ['git', 'clone', url, to]->join(' ')
+        output = system(cmd)
+        if v:shell_error != 0
+            echoerr output
+            return
+        endif
+        cmd = ['git', '-C', to, 'checkout', 'tags/' .. tag]->join(' ')
+        output = system(cmd)
+        if v:shell_error != 0
+            echoerr output
+            return
+        endif
+
+        echo "Installed vimwiki successful!"
+    endif
+enddef
+
+def g:InstallEditorPlugin(plugin_name: string)
+    if executable('git') != 1
+        echoerr "Installing need to use git command but it's unavailable"
+        return
+    endif
+
+    var path_segments = [&runtimepath->split(',')->get(0),
+        'pack', 'plugins', 'start']
+    var destination = join(path_segments, '/')
+    mkdir(destination, 'p')
+    
+
+    if plugin_name == 'vimwiki'
+        InstallVimWiki(destination)
+    else
+        echoerr "Unsupported plugin name " .. plugin_name
+    endif
+enddef
