@@ -66,7 +66,36 @@ def InstallVimwiki(destination: string)
     endif
 enddef
 
-def g:InstallEditorPlugin(plugin_name: string)
+def InstallCommentary(destination: string)
+    const url = 'https://github.com/tpope/vim-commentary.git'
+    const tag = 'v1.3'
+    const to  = destination .. '/' .. 'commentary'
+
+    var cmd: string
+    var output: string
+
+    if exists("g:loaded_commentary") == 0
+        cmd = ['git', 'clone', url, to]->join(' ')
+        output = system(cmd)
+        if v:shell_error != 0
+            echoerr output
+            return
+        endif
+        cmd = ['git', '-C', to, 'checkout', 'tags/' .. tag]->join(' ')
+        output = system(cmd)
+        if v:shell_error != 0
+            echoerr output
+            return
+        endif
+
+        var doc_path = to .. '/' .. 'doc'
+        execute 'helptags ' .. doc_path
+
+        echo "Install commentary successful! Path: " .. to
+    endif
+enddef
+
+def! g:InstallEditorPlugin(plugin_name: string)
     if executable('git') != 1
         echoerr "Installing need to use git command but it's unavailable"
         return
@@ -79,6 +108,8 @@ def g:InstallEditorPlugin(plugin_name: string)
 
     if plugin_name == 'vimwiki'
         InstallVimwiki(destination)
+    elseif plugin_name == 'commentary' 
+        InstallCommentary(destination)
     else
         echoerr "Unsupported plugin name " .. plugin_name
     endif
