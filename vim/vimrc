@@ -27,6 +27,7 @@ set background=dark
 
 g:mapleader = ' '
 
+g:vimwiki_dir_link = 'index'
 g:vimwiki_list = [
     {
         'path': '~/Workspace/note/',
