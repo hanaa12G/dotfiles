@@ -26,6 +26,7 @@ set relativenumber
 set background=dark
 
 g:mapleader = ' '
+
 g:vimwiki_list = [
     {
         'path': '~/Workspace/note/',
@@ -33,6 +34,8 @@ g:vimwiki_list = [
         'syntax': 'markdown',
     }
 ]
+g:vimwiki_autowriteall = 1
+command! -nargs=0 CloseAllWikiBuffers bufdo if bufname() =~ '.*\.md' | bd | endif
 
 
 hi MatchParen ctermbg=Black ctermfg=Green term=None
