@@ -1,10 +1,9 @@
 vim9script
-
 set nocompatible
 filetype plugin on
 syntax on
 
-color murphy
+color habamax
 
 set hlsearch incsearch
 
@@ -12,18 +11,17 @@ set tabstop=4
 set shiftwidth=4
 set expandtab
 set autoindent
-
 set colorcolumn=80
 set cursorline
 
 set nowrap
 
 set hidden
-
 set number
-set relativenumber
 
 set background=dark
+
+g:loaded_matchparen = 0
 
 g:mapleader = ' '
 
@@ -33,14 +31,41 @@ g:vimwiki_list = [
         'path': '~/Workspace/note/',
         'ext': '.md',
         'syntax': 'markdown',
+    },
+    {
+        'path': '~/Workspace/blog_github/markdown',
+        'ext': '.md',
+        'systax': 'markdown'
     }
 ]
 g:vimwiki_autowriteall = 1
 command! -nargs=0 CloseAllWikiBuffers bufdo if bufname() =~ '.*\.md' | bd | endif
 
+set laststatus=2
+g:lsp_auto_enable = 0
+g:lsp_use_native_client = 1
+g:lsp_semantic_enabled = 0
+g:lsp_format_sync_timeout = 5000
+g:lsp_inlay_hints_enabled = 1
+g:lsp_diagnostics_virtual_text_enabled = 0
+g:lsp_diagnostics_float_cursor = 1
 
-hi MatchParen ctermbg=Black ctermfg=Green term=None
+if executable('clangd-16') 
+    autocmd User lsp_setup lsp#register_server({ name: 'clangd', cmd: ['clangd-16'], allowlist: ['c', 'cpp'], })
+endif
 
+def LSPBufferEnabled()
+    setlocal omnifunc=lsp#complete
+    setlocal signcolumn=yes
+
+    nmap <buffer> gd <plug>(lsp-declaration)
+    nmap <buffer> gD <plug>(lsp-defition)
+enddef
+
+augroup LSPInstall
+    au!
+    autocmd User lsp_buffer_enabled LSPBufferEnabled()
+augroup END
 
 def InstallVimwiki(destination: string)
     const url = 'https://github.com/vimwiki/vimwiki.git'
@@ -49,7 +74,6 @@ def InstallVimwiki(destination: string)
 
     InstallPluginURL(url, to, tag)
 enddef
-
 def InstallCommentary(destination: string)
     const url = 'https://github.com/tpope/vim-commentary.git'
     const tag = 'v1.3'
@@ -90,6 +114,33 @@ def InstallIndentGuides(destination: string)
     endif
 enddef
 
+def InstallVimLSP(destination: string)
+    const url = 'https://github.com/prabirshrestha/vim-lsp.git'
+    const to  = destination .. '/' .. 'vim-lsp'
+
+    if exists('g:lsp_loaded') == 0
+        InstallPluginURL(url, to)
+    endif
+enddef
+
+def InstallVimFzf(destination: string)
+    var url = 'https://github.com/junegunn/fzf.vim.git'
+    var to  = destination .. '/' .. 'fzf.vim'
+
+    if exists('g:loaded_fzf_vim') == 0
+        InstallPluginURL(url, to)
+    endif
+
+    url = 'https://github.com/junegunn/fzf.git'
+    to  = destination .. '/' .. 'fzf'
+
+    if exists('g:loaded_fzf') == 0
+        InstallPluginURL(url, to)
+    endif
+
+    call fzf#install()
+enddef
+
 def! g:InstallEditorPlugin(plugin_name: string)
     if executable('git') != 1
         echoerr "Installing need to use git command but it's unavailable"
@@ -107,9 +158,16 @@ def! g:InstallEditorPlugin(plugin_name: string)
         InstallCommentary(destination)
     elseif plugin_name == 'vim-indent-guides'
         InstallIndentGuides(destination)
+    elseif plugin_name == 'vim-lsp'
+        InstallVimLSP(destination)
+    elseif plugin_name == 'fzf.vim'
+        InstallVimFzf(destination)
     else
         echoerr "Unsupported plugin name " .. plugin_name
     endif
 enddef
 
 command! -nargs=1 InstallEditorPlugin call g:InstallEditorPlugin(<f-args>)
+command! -nargs=0 EnableLSP call lsp#enable()
+command! -nargs=0 DisableLSP call lsp#disable()
+
