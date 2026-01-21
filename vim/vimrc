@@ -171,3 +171,4 @@ command! -nargs=1 InstallEditorPlugin call g:InstallEditorPlugin(<f-args>)
 command! -nargs=0 EnableLSP call lsp#enable()
 command! -nargs=0 DisableLSP call lsp#disable()
 
+nmap <S-k> <nop>
